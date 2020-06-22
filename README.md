@@ -1,5 +1,5 @@
 # Teste para pessoa desenvolvedora RSI Tecnologia
-Este repositório tem como fim testar os parceiros para trabalhar conosco desenvolvendo projetos fantásticos
+Este repositório tem como finalizade testar os parceiros para trabalhar conosco desenvolvendo projetos fantásticos
 > Teste é para quem é apaixonado por HTML, CSS, JavaScript e atento aos detalhes!
 
 
