@@ -1,13 +1,16 @@
 const express = require('express');
 const routes = express.Router();
-const crypto = require('crypto');
 const multer = require('multer');
+const bcrypt = require('bcrypt');
 const multerConfig = require('./config/multer');
 const Product = require('./models/Product');
 const User = require('./models/User');
 
+
+
 routes.get('/product', async(req,res) =>{
-    const products = await Product.find();
+    const {page = 1} = req.query;
+    const products = await Product.find().skip((page - 1)*10).limit(10);
     return res.json(products);
 });
 routes.post('/product', multer(multerConfig).single('file'), async(req,res) =>{
@@ -33,12 +36,13 @@ routes.delete('/product/:id', async(req, res) =>{
 });
 
 routes.post('/user', async(req, res) =>{
-    const secret = req.body.userPassword;
-    const hash = crypto.createHmac('sha256', secret).digest('hex');
+    const secret = req.body.userPassword;  
+    const salt = 10; 
+    const hash = await bcrypt.hash(secret, salt);
     console.log(hash);
     const user = await User.create({
         userName: req.body.userName,
-        userPassword: hash
+        userPassword: hash,
     });
 
     return res.json(user);
@@ -55,6 +59,17 @@ routes.delete('/user/:id', async(req, res)=>{
 });
 
 routes.post('/login', async(req, res)=>{
-
+    const {userName, userPassword} = req.body;
+    const user = await User.findOne({userName});
+    if(!user){
+        res.json({msg:'Usuário não encontrado'});
+    }
+    if(!await bcrypt.compare(userPassword, user.userPassword)){
+        res.json({msg:'Senha incorreta'});
+    }
+    else{
+        res.json({msg: `Bem-vindo: ${userName}`});
+    }
+    
 });
 module.exports = routes;
