@@ -11,7 +11,11 @@ const User = require('./models/User');
 routes.get('/product', async(req,res) =>{
     const {page = 1} = req.query;
     const products = await Product.find().skip((page - 1)*10).limit(10);
-    return res.json(products);
+    const total = await (await Product.find()).length;
+    return res.json({
+        products,
+        total
+    });
 });
 routes.post('/product', multer(multerConfig).single('file'), async(req,res) =>{
     console.log(req.file);
@@ -41,7 +45,7 @@ routes.post('/user', async(req, res) =>{
     const hash = await bcrypt.hash(secret, salt);
     console.log(hash);
     const user = await User.create({
-        userName: req.body.userName,
+        userName: String(req.body.userName).toLocaleUpperCase(),
         userPassword: hash,
     });
 
@@ -60,12 +64,14 @@ routes.delete('/user/:id', async(req, res)=>{
 
 routes.post('/login', async(req, res)=>{
     const {userName, userPassword} = req.body;
-    const user = await User.findOne({userName});
+    const user = await User.findOne({userName: String(userName).toLocaleUpperCase()});
     if(!user){
-        res.json({msg:'Usuário não encontrado'});
+        res.status(400).json({msg:'Usuário não encontrado'});
     }
+    //linha 67 49 da erro bem aqui
+    console.log(userPassword)
     if(!await bcrypt.compare(userPassword, user.userPassword)){
-        res.json({msg:'Senha incorreta'});
+        res.status(400).json({msg:'Senha incorreta'});
     }
     else{
         res.json({msg: `Bem-vindo: ${userName}`});
